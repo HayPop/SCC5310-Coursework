@@ -66,6 +66,14 @@ class DNSTopology(Topo):
 
         root = self.addHost('root', cls=DNSServer, ip='10.0.0.2/24')
         self.addLink(root, s1)
+        router1 = self.addHost('router1', ip='172.16.32.1/24',
+                               cls=LinuxRouter, routes=[('10.0.0.2/24', '172.16.32.2')
+                                                        ('10.0.1.2/24',
+                                                         '172.16.32.2')
+                                                        ('10.0.2.2/24',
+                                                         '172.16.32.2')
+                                                        ('10.0.3.2/24', '172.16.32.2')])
+
 
 # the topologies accessible to the mn tool's `--topo` flag
 # note: if using the Dockerfile, this must be the same as in the Dockerfile
