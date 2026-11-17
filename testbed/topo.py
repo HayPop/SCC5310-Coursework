@@ -66,13 +66,18 @@ class DNSTopology(Topo):
 
         root = self.addHost('root', cls=DNSServer, ip='10.0.0.2/24')
         self.addLink(root, s1)
-        router1 = self.addHost('router1', ip='172.16.32.1/24',
-                               cls=LinuxRouter, routes=[('10.0.0.2/24', '172.16.32.2')
-                                                        ('10.0.1.2/24',
-                                                         '172.16.32.2')
-                                                        ('10.0.2.2/24',
-                                                         '172.16.32.2')
-                                                        ('10.0.3.2/24', '172.16.32.2')])
+        router1 = self.addHost('router1',
+                                ip='172.16.32.1/24',
+                                cls=LinuxRouter,
+                                routes=[
+                                        ('10.0.0.2/24', '172.16.32.2'),
+                                        ('10.0.1.2/24', '172.16.32.2'),
+                                        ('10.0.2.2/24', '172.16.32.2'),
+                                        ('10.0.3.2/24', '172.16.32.2'),
+                                        ]
+                                )
+        router2 = self.addHost('router2', ip = '172.16.32.2/24', cls = LinuxRouter, routes =[('192.168.0.0', '172.16.32.1/24')])
+
 
 
 # the topologies accessible to the mn tool's `--topo` flag
