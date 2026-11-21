@@ -67,17 +67,44 @@ class DNSTopology(Topo):
         root = self.addHost('root', cls=DNSServer, ip='10.0.0.2/24')
         self.addLink(root, s1)
         router1 = self.addHost('router1',
-                                ip='172.16.32.1/24',
-                                cls=LinuxRouter,
-                                routes=[
-                                        ('10.0.0.2/24', '172.16.32.2'),
-                                        ('10.0.1.2/24', '172.16.32.2'),
-                                        ('10.0.2.2/24', '172.16.32.2'),
-                                        ('10.0.3.2/24', '172.16.32.2'),
-                                        ]
-                                )
-        router2 = self.addHost('router2', ip = '172.16.32.2/24', cls = LinuxRouter, routes =[('192.168.0.0', '172.16.32.1/24')])
+                               ip='172.16.32.1/24',
+                               cls=LcinuxRouter,
+                               routes=[
+                                   ('10.0.0.0/24', '172.16.32.2'),
+                                   ('10.0.1.0/24', '172.16.32.2'),
+                                   ('10.0.2.0/24', '172.16.32.2'),
+                                   ('10.0.3.0/24', '172.16.32.2'),
+                               ]
+                               )
+        self.addLink(router1, s1, params1={'ip': '172.16.32.1/24'})
 
+        router2 = self.addHost('router2', ip='172.16.32.2/16',
+                               cls=LinuxRouter, routes=[('192.168.0.0/24', '172.16.32.1')])
+        self.addLink(router2, router1, params1={
+                     'ip': '172.16.32.2/16'}, params2={'ip': '172.16.32.1/16'})
+        s2 = self.addSwitch('s2')
+        s3 = self.addSwitch('s3')
+        s4 = self.addSwitch('s4')
+        s5 = self.addSwitch('s5')
+        self.addLink(router2, s2, params1={
+                     'ip': '10.0.0.1'}, delay='0ms', loss=0)
+        self.addLink(router2, s3, params1={
+                     'ip': '10.0.1.1'}, delay='0ms', loss=0)
+        self.addLink(router2, s4, params1={
+                     'ip': '10.0.2.1'}, delay='0ms', loss=0)
+        self.addLink(router2, s5, params1={
+                     'ip': '10.0.3.1'}, delay='100ms', loss=10)
+
+        tld = self.addHost('tld', cls=DNSServer,
+                           ip='10.0.1.2/24', defaultRoute='10.0.0.1')
+        auth = self.addHost('auth', cls=DNSServer,
+                            ip='10.0.2.2/24', defaultRoute='10.0.2.1')
+        lossy = self.addHost('lossy', cls=DNSServer,
+                             ip='10.0.3.2/24', defaultRoute='10.0.3.1')
+
+        self.addLink(tld, s3)
+        self.addLink(auth, s4)
+        self.addLink(lossy, s5)
 
 
 # the topologies accessible to the mn tool's `--topo` flag
