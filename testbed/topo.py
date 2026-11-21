@@ -64,11 +64,9 @@ class DNSTopology(Topo):
         s1 = self.addSwitch('s1')
         self.addLink(host, s1)
 
-        root = self.addHost('root', cls=DNSServer, ip='10.0.0.2/24')
-        self.addLink(root, s1)
         router1 = self.addHost('router1',
-                               ip='172.16.32.1/24',
-                               cls=LcinuxRouter,
+                               ip=None,
+                               cls=LinuxRouter,
                                routes=[
                                    ('10.0.0.0/24', '172.16.32.2'),
                                    ('10.0.1.0/24', '172.16.32.2'),
@@ -76,9 +74,9 @@ class DNSTopology(Topo):
                                    ('10.0.3.0/24', '172.16.32.2'),
                                ]
                                )
-        self.addLink(router1, s1, params1={'ip': '172.16.32.1/24'})
+        self.addLink(router1, s1, params1={'ip': '192.168.0.1/24'})
 
-        router2 = self.addHost('router2', ip='172.16.32.2/16',
+        router2 = self.addHost('router2', ip=None,
                                cls=LinuxRouter, routes=[('192.168.0.0/24', '172.16.32.1')])
         self.addLink(router2, router1, params1={
                      'ip': '172.16.32.2/16'}, params2={'ip': '172.16.32.1/16'})
@@ -87,21 +85,24 @@ class DNSTopology(Topo):
         s4 = self.addSwitch('s4')
         s5 = self.addSwitch('s5')
         self.addLink(router2, s2, params1={
-                     'ip': '10.0.0.1'}, delay='0ms', loss=0)
+                     'ip': '10.0.0.1/24'}, delay='0ms', loss=0)
         self.addLink(router2, s3, params1={
-                     'ip': '10.0.1.1'}, delay='0ms', loss=0)
+                     'ip': '10.0.1.1/24'}, delay='0ms', loss=0)
         self.addLink(router2, s4, params1={
-                     'ip': '10.0.2.1'}, delay='0ms', loss=0)
+                     'ip': '10.0.2.1/24'}, delay='0ms', loss=0)
         self.addLink(router2, s5, params1={
-                     'ip': '10.0.3.1'}, delay='100ms', loss=10)
+                     'ip': '10.0.3.1/24'}, delay='100ms', loss=10)
+
+        root = self.addHost('root', cls=DNSServer, ip='10.0.0.2/24' defaultRoute='via 10.0.0.1')
 
         tld = self.addHost('tld', cls=DNSServer,
-                           ip='10.0.1.2/24', defaultRoute='10.0.0.1')
+                           ip='10.0.1.2/24', defaultRoute='via 10.0.1.1')
         auth = self.addHost('auth', cls=DNSServer,
-                            ip='10.0.2.2/24', defaultRoute='10.0.2.1')
+                            ip='10.0.2.2/24', defaultRoute='via 10.0.2.1')
         lossy = self.addHost('lossy', cls=DNSServer,
-                             ip='10.0.3.2/24', defaultRoute='10.0.3.1')
+                             ip='10.0.3.2/24', defaultRoute='via 10.0.3.1')
 
+        self.addLink(root, s2)
         self.addLink(tld, s3)
         self.addLink(auth, s4)
         self.addLink(lossy, s5)
